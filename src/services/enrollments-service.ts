@@ -19,7 +19,7 @@ interface Adress {
   erro: boolean;
 }
 
-async function getAddressFromCEP(cep: string | number) {
+async function getAddressFromCEP(cep: string) {
   if (!cep || cep === '') {
     throw badCepRequestError();
   }
@@ -69,27 +69,16 @@ async function createOrUpdateEnrollmentWithAddress(params: CreateOrUpdateEnrollm
   enrollment.birthday = new Date(enrollment.birthday);
   const address = getAddressForUpsert(params.address);
 
-  // TODO - Verificar se o CEP é válido antes de associar ao enrollment.
+  // TODO - Verificars.cep || params.address.cep === '') {
   if (!params.address.cep || params.address.cep === '') {
     throw badCepRequestError();
   }
-
   const result = (await request.get(`${process.env.VIA_CEP_API}/${params.address.cep}/json/`)).data as Adress;
-
-  const FilteredAdress = {
-    logradouro: result.logradouro,
-    complemento: result.complemento,
-    bairro: result.bairro,
-    cidade: result.localidade,
-    uf: result.uf,
-  };
-
   if (result.erro) {
     throw badCepRequestError();
   }
 
   const newEnrollment = await enrollmentRepository.upsert(params.userId, enrollment, exclude(enrollment, 'userId'));
-
   await addressRepository.upsert(newEnrollment.id, address, address);
 }
 
