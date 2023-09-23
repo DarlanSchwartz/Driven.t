@@ -3,7 +3,7 @@ import { PaymentBody } from '@/schemas/payments-schemas';
 import { notFoundErrorType2, unauthorizedErrorType2 } from '@/errors';
 import { ticketsRepository } from '@/repositories/tickets-repository';
 import { paymentRepository } from '@/repositories';
-import { badCepRequestError, badRequestError } from '@/errors/bad-request-error';
+import { badRequestError } from '@/errors/bad-request-error';
 
 export type PaymentResponse = {
   id: number;
