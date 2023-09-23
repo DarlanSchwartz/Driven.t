@@ -10,3 +10,13 @@ export function badCepRequestError(): RequestError {
     message: 'Invalid cep!',
   };
 }
+
+export function badRequestError(message: string): RequestError {
+  return {
+    name: 'BadRequestError',
+    data: null,
+    status: httpStatus.BAD_REQUEST,
+    statusText: 'Bad Request',
+    message: message,
+  };
+}

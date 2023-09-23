@@ -1,26 +1,26 @@
-import { Ticket, TicketStatus } from '@prisma/client';
+import { Enrollment, Ticket, TicketStatus } from '@prisma/client';
 import { prisma } from '@/config';
 import { TicketResponse } from '@/services/tickets-service';
 
-/*
-{
-  id: number,
-  status: string, //RESERVED | PAID
-  ticketTypeId: number,
-  enrollmentId: number,
+export type TicketResponseWithEnrollment = {
+  id: number;
+  status: string; //RESERVED | PAID
+  ticketTypeId: number;
+  enrollmentId: number;
   TicketType: {
-    id: number,
-    name: string,
-    price: number,
-    isRemote: boolean,
-    includesHotel: boolean,
-    createdAt: Date,
-    updatedAt: Date,
-  },
-  createdAt: Date,
-  updatedAt: Date,
-}
-*/
+    id: number;
+    name: string;
+    price: number;
+    isRemote: boolean;
+    includesHotel: boolean;
+    createdAt: Date;
+    updatedAt: Date;
+  };
+  Enrollment: Enrollment;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
 async function getTicket(userId: number): Promise<TicketResponse | null> {
   const ticket = await prisma.ticket.findFirst({
     where: {
@@ -33,6 +33,32 @@ async function getTicket(userId: number): Promise<TicketResponse | null> {
     },
   });
   return ticket as TicketResponse;
+}
+
+async function getTicketWithEnrollment(tickedId: number): Promise<TicketResponseWithEnrollment | null> {
+  const ticket = await prisma.ticket.findFirst({
+    where: {
+      id: tickedId,
+    },
+    include: {
+      TicketType: true,
+      Enrollment: true,
+    },
+  });
+  return ticket as TicketResponseWithEnrollment;
+}
+
+async function getTicketPrice(tickedId: number): Promise<number | null> {
+  const ticket = await prisma.ticket.findFirst({
+    where: {
+      id: tickedId,
+    },
+    include: {
+      TicketType: true,
+    },
+  });
+
+  return ticket.TicketType.price;
 }
 async function getTicketTypes() {
   return prisma.ticketType.findMany();
@@ -63,9 +89,20 @@ async function create(ticketId: number, enrollmentId: number): Promise<TicketRes
 
   return result;
 }
+async function ticketExists(ticketId: number): Promise<boolean> {
+  const ticket = await prisma.ticket.findFirst({
+    where: {
+      id: ticketId,
+    },
+  });
+  return ticket !== null;
+}
 
 export const ticketsRepository = {
   create,
   getTicket,
   getTicketTypes,
+  ticketExists,
+  getTicketPrice,
+  getTicketWithEnrollment,
 };
