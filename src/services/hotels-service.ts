@@ -25,6 +25,7 @@ async function getAllHotels(userId: number): Promise<Hotel[]> {
   if (enrollment.Ticket.TicketType.isRemote) throw paymentRequiredError('This ticket is remote');
   if (enrollment.Ticket.status !== 'PAID') throw paymentRequiredError('You need to pay for the hotel');
   const hotels = await hotelRepository.getAllHotels();
+  if (!hotels || hotels.length == 0) throw notFoundErrorType2('No hotels found');
   return hotels;
 }
 
@@ -36,6 +37,7 @@ async function getHotelWithRooms(hotelId: number, userId: number): Promise<Hotel
   if (!enrollment.Ticket.TicketType.includesHotel) throw paymentRequiredError('This ticket does not include hotel');
   if (enrollment.Ticket.TicketType.isRemote) throw paymentRequiredError('This ticket is remote');
   const hotels = await hotelRepository.getHotelWithRooms(hotelId);
+  if (!hotels) throw notFoundErrorType2('No hotels found');
   return hotels;
 }
 

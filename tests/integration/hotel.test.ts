@@ -52,20 +52,36 @@ describe('GET /hotels', () => {
   });
 
   describe('when token is valid', () => {
-    it('should respond with status 404 if no enrollment exists for the user id', async () => {
-      const user = await createUser();
-      const token = await generateValidToken(user);
-      const response = await server.get('/hotels').set('Authorization', `Bearer ${token}`);
-
-      expect(response.status).toEqual(httpStatus.NOT_FOUND);
-    });
-
     it('should respond with status 404 if no ticket exists for the user id', async () => {
       const user = await createUser();
       const token = await generateValidToken(user);
       await createEnrollmentWithAddress(user);
       const response = await server.get('/hotels').set('Authorization', `Bearer ${token}`);
       expect(response.status).toEqual(httpStatus.NOT_FOUND);
+    });
+
+    it('should respond with status 404 if no enrollment exists for the user id', async () => {
+      const user = await createUser();
+      const token = await generateValidToken(user);
+      await createEnrollmentWithAddress(user);
+      const response = await server.get('/hotels').set('Authorization', `Bearer ${token}`);
+
+      expect(response.status).toEqual(httpStatus.NOT_FOUND);
+    });
+
+    it('should respond with status 404 if not hotels exists', async () => {
+      const user = await createUser();
+      const token = await generateValidToken(user);
+      const enrollment = await createEnrollmentWithAddress(user);
+      const ticketType = await createTicketTypeWithParams(false, true);
+      const ticket = await createTicket(enrollment.id, ticketType.id, TicketStatus.RESERVED);
+
+      const body = { ticketId: ticket.id, cardData: generateCreditCardData() };
+
+      await server.post('/payments/process').set('Authorization', `Bearer ${token}`).send(body);
+
+      const response2 = await server.get(`/hotels`).set('Authorization', `Bearer ${token}`);
+      expect(response2.status).toEqual(httpStatus.NOT_FOUND);
     });
 
     it('should respond with status 402 if ticket exists for the user id but it is remote', async () => {
@@ -151,6 +167,21 @@ describe('GET /hotels/:hotelId', () => {
   });
 
   describe('when token is valid', () => {
+    it('should respond with status 404 if the hotel of given id doesnt exits', async () => {
+      const user = await createUser();
+      const token = await generateValidToken(user);
+      const enrollment = await createEnrollmentWithAddress(user);
+      const ticketType = await createTicketTypeWithParams(false, true);
+      const ticket = await createTicket(enrollment.id, ticketType.id, TicketStatus.RESERVED);
+
+      const body = { ticketId: ticket.id, cardData: generateCreditCardData() };
+
+      await server.post('/payments/process').set('Authorization', `Bearer ${token}`).send(body);
+
+      const response2 = await server.get(`/hotels/324576`).set('Authorization', `Bearer ${token}`);
+      expect(response2.status).toEqual(httpStatus.NOT_FOUND);
+    });
+
     it('should respond with status 404 if no enrollment exists for the user id', async () => {
       const user = await createUser();
       const token = await generateValidToken(user);
