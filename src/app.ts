@@ -3,6 +3,7 @@ import 'express-async-errors';
 import express, { Express } from 'express';
 import cors from 'cors';
 import { paymentsRouter } from './routers/payments-router';
+import { bookingRouter } from './routers/booking-router';
 import { handleApplicationErrors } from '@/middlewares';
 import {
   usersRouter,
@@ -29,6 +30,7 @@ app
   .use('/payments', paymentsRouter)
   .use('/hotels', hotelsRouter)
   .use('/hotels', hotelsRouter)
+  .use('/booking', bookingRouter)
   .use(handleApplicationErrors);
 
 export function init(): Promise<Express> {
