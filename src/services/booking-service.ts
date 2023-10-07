@@ -53,7 +53,6 @@ async function updateBooking(roomId: number, bookingId: number | string | undefi
   const room = await bookingRepository.roomIdExists(roomId);
   if (!room) throw notFoundErrorType2('Room not found');
   const ticket = await ticketsRepository.getTicket(userId);
-  if (ticket.status !== 'RESERVED') throw forbiddenError('Ticket is not reserved');
   if (room.Booking.length >= room.capacity) throw forbiddenError('Room is full');
   if (isNaN(Number(bookingId))) throw notFoundErrorType2('BookingId is not a number');
   const result = await bookingRepository.update(Number(bookingId), roomId);
