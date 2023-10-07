@@ -51,8 +51,9 @@ async function createBooking(roomId: number, userId: number) {
 */
 async function updateBooking(roomId: number, bookingId: number | string | undefined | null, userId: number) {
   const room = await bookingRepository.roomIdExists(roomId);
+  const booking = await bookingRepository.getByUserId(userId);
   if (!room) throw notFoundErrorType2('Room not found');
-  const ticket = await ticketsRepository.getTicket(userId);
+  if (!booking) throw forbiddenError('Booking not found');
   if (room.Booking.length >= room.capacity) throw forbiddenError('Room is full');
   if (isNaN(Number(bookingId))) throw notFoundErrorType2('BookingId is not a number');
   const result = await bookingRepository.update(Number(bookingId), roomId);
