@@ -29,6 +29,16 @@ async function update(bookingId: number, roomId: number) {
   });
 }
 
+async function getRoomInfo(id: number) {
+  return await prisma.room.findUnique({
+    where: { id },
+    select: {
+      capacity: true,
+      _count: { select: { Booking: true } },
+    },
+  });
+}
+
 async function roomIdExists(roomId: number) {
   return prisma.room.findFirst({
     where: {
@@ -45,4 +55,5 @@ export const bookingRepository = {
   create,
   update,
   roomIdExists,
+  getRoomInfo,
 };
