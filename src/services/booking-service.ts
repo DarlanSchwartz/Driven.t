@@ -3,6 +3,7 @@ import { bookingRepository } from '@/repositories/booking-repository';
 import { forbiddenError } from '@/errors/forbidden-error';
 import { hotelRepository } from '@/repositories/hotels-repository';
 import { ticketsRepository } from '@/repositories/tickets-repository';
+import { enrollmentRepository } from '@/repositories';
 
 async function getUserBooking(userId: number) {
   const result = await bookingRepository.getByUserId(userId);
@@ -32,6 +33,10 @@ Retorna status 403 se o ticket do usuário não foi pago?
 
 async function createBooking(roomId: number, userId: number) {
   const ticket = await ticketsRepository.getTicket(userId);
+  const enrollment = await enrollmentRepository.findWithAddressByUserId(userId);
+  if (!enrollment) throw forbiddenError('Enrollment not found');
+  if (!ticket) throw forbiddenError('Ticket not found');
+  if (!ticket.TicketType) throw forbiddenError('TicketType not found');
   if (ticket.TicketType.isRemote) throw forbiddenError('Ticket is remote');
   if (ticket.TicketType.includesHotel == false) throw forbiddenError('Ticket does not include hotel');
   if (ticket.status !== 'PAID') throw forbiddenError('Ticket is not paid');
@@ -55,7 +60,7 @@ async function updateBooking(roomId: number, bookingId: number | string | undefi
   if (!room) throw notFoundErrorType2('Room not found');
   if (!booking) throw forbiddenError('Booking not found');
   if (room.Booking.length >= room.capacity) throw forbiddenError('Room is full');
-  if (isNaN(Number(bookingId))) throw notFoundErrorType2('BookingId is not a number');
+  if (isNaN(Number(bookingId)) || bookingId == '0') throw notFoundErrorType2('BookingId is not a number');
   const result = await bookingRepository.update(Number(bookingId), roomId);
   const response = { bookingId: result.id };
   return response;

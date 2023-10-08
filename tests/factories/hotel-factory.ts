@@ -24,7 +24,7 @@ export async function createHotel(includeRooms: boolean) {
       name: faker.name.findName(),
       Rooms: {
         create: {
-          capacity: faker.datatype.number(),
+          capacity: faker.datatype.number({ min: 1, max: 4 }),
           name: faker.name.findName(),
         },
       },
